@@ -116,7 +116,15 @@ df_no_energy_cut_ext = get_frame_ext()
 frames = [df_no_energy_cut, df_no_energy_cut_ext]
 df_no_energy_cut_total = pd.concat(frames)
 df_no_energy_cut_total.enu_reco *= 1000#Now the reco energy is in [MeV]
-df=df_no_energy_cut_total[(df_no_energy_cut_total['enu_reco']<1200) & (df_no_energy_cut_total['enu_reco']>200)]
+
+################
+##Energy range##
+################
+
+UPPER_LIMIT = 1550
+LOWER_LIMIT = 150
+
+df=df_no_energy_cut_total[(df_no_energy_cut_total['enu_reco']<UPPER_LIMIT) & (df_no_energy_cut_total['enu_reco']>LOWER_LIMIT)]
 #df['reco_with_weight']     = df['enu_reco'] * df['event_weight'] #Bullshit
 
 hknumuCCQE     = df[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 0)]#pdg == +-14 means muon and +-12 is electron
@@ -154,17 +162,17 @@ y = [hknumuCCQE_norm, hknumuRes_norm, hknumuMEC_norm, hknumuCCOther_norm, hknuEI
 
 x1 = np.empty(14)
 for i in range(len(x1)):
-    x1[i] = 200 + 71.35 * i + 35
+    x1[i] = 200 + 100 * i
 
 y1 = np.empty(14)
-f = open('/uboone/data/users/shijy/Consistency/nu_mu_CCQE_Content_digitized.txt',"r")
+f = open('/uboone/data/users/shijy/Consistency/PeLEE_reco_nu_energy_digitized.csv',"r")
 for i in range(len(y1)):
     y1[i] = f.readline()
-#weight = np.empty(14)
-#weght.fill(1/total)
+
 total_y1 = 0
 for i in range(len(y1)):
     total_y1 += y1[i]
+
 y2 = y1
 for i in range(len(y1)):
     y2[i] = y1[i]/total_y1
@@ -174,10 +182,10 @@ for i in range(len(y1)):
 ############
 
 plt.figure(figsize=(15,10))
-labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'DLLEE tech note']
+labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'PeLEE tech note']
 #plt.hist(x, bins=500, stacked=True,label=labels)
-plt.hist(x, bins=14, range=(200,1200), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
-plt.hist(x1,bins=14,range=(200,1200),weights=y2, histtype='step',label='digitized',linewidth=2,edgecolor='black')
+plt.hist(x, bins=14, range=(LOWER_LIMIT, UPPER_LIMIT), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
+plt.hist(x1,bins=14,range=(LOWER_LIMIT, UPPER_LIMIT),weights=y2, histtype='step',label='PeLEE tech note',linewidth=2,edgecolor='black')
 plt.xlabel('Neutrino reconstructed energy [MeV]', fontsize=22)
 
 ##################
@@ -190,7 +198,7 @@ hknumuMEC_patch      = mpatches.Patch(color='tab:green', label=r"BNB $\nu_{\mu}$
 hknumuCCOther_patch  = mpatches.Patch(color='tab:red', label=r"BNB $\nu_{\mu}$ CC Other")
 hknuEInclusive_patch = mpatches.Patch(color='tab:purple', label=r"$\nu_{e}$ Inclusive")
 hkNCInclusive_patch  = mpatches.Patch(color='tab:brown', label="NC Inlcusive")
-x1_line              = Line2D([0], [0], color='k', linewidth=2, label="DLLEE tech note")
+x1_line              = Line2D([0], [0], color='k', linewidth=2, label="PeLEE tech note")
 
 handle_me = [hknumuCCQE_patch,hknumuRes_patch,hknumuMEC_patch,hknumuCCOther_patch,hknuEInclusive_patch,hkNCInclusive_patch,x1_line]
 plt.legend(handle_me, labels,fontsize=20)
