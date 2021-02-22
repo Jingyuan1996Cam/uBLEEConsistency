@@ -112,12 +112,74 @@ def get_frame_ext(files=ext_files):
 ##Selection##
 #############
 
-df_no_energy_cut = get_frame()#df now has all information
-df_no_energy_cut_ext = get_frame_ext()
-frames = [df_no_energy_cut, df_no_energy_cut_ext]
+#df_no_energy_cut = get_frame()#df now has all information
+#df_no_energy_cut_ext = get_frame_ext()
+
+##########################################################################################################################
+
+df_1enp_nue    = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/nue.root"])
+df_1enp_MC_BNB = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/mc.root"])
+df_1enp_CC0pi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/ccnopi.root"])
+df_1enp_CCpi0  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/ccpi0.root"])
+df_1enp_NCCpi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/nccpi.root"])
+df_1enp_NC0pi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/ncnopi.root"])
+df_1enp_NCpi0  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/ncpi0.root"])
+df_1enp_CCCpi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1eNp_fullMC/cccpi.root"])
+df_1enp_EXT    = get_frame_ext(["/uboone/data/users/wospakrk/sbnfit_0928/1eNp/ext.root"])
+
+df_1enp_nue['POT_weight']    = 0.00355
+df_1enp_MC_BNB['POT_weight'] = 0.187
+df_1enp_CC0pi['POT_weight']  = 0.0305
+df_1enp_CCpi0['POT_weight']  = 0.0692
+df_1enp_NCCpi['POT_weight']  = 0.0107
+df_1enp_NC0pi['POT_weight']  = 0.0237
+df_1enp_NCpi0['POT_weight']  = 0.0494
+df_1enp_CCCpi['POT_weight']  = 0.0227
+df_1enp_EXT['POT_weight']    = 0.371#Check if the number in python is long enough
+
+df_1e0p_nue    = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/nue.root"])
+df_1e0p_MC_BNB = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/mc.root"])
+df_1e0p_CC0pi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/ccnopi.root"])
+df_1e0p_CCpi0  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/ccpi0.root"])
+df_1e0p_NCCpi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/nccpi.root"])
+df_1e0p_NC0pi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/ncnopi.root"])
+df_1e0p_NCpi0  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/ncpi0.root"])
+df_1e0p_CCCpi  = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/cccpi.root"])
+df_1e0p_DIRT   = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/1e0p_fullMC/dirt.root"])
+df_1e0p_EXT    = get_frame_ext(["/uboone/data/users/wospakrk/sbnfit_0928/1e0p/ext.root"])
+
+df_1e0p_nue['POT_weight']    = 0.00355
+df_1e0p_MC_BNB['POT_weight'] = 0.187
+df_1e0p_CC0pi['POT_weight']  = 0.0305
+df_1e0p_CCpi0['POT_weight']  = 0.0692
+df_1e0p_NCCpi['POT_weight']  = 0.0107
+df_1e0p_NC0pi['POT_weight']  = 0.0237
+df_1e0p_NCpi0['POT_weight']  = 0.0494
+df_1e0p_CCCpi['POT_weight']  = 0.0227
+df_1e0p_DIRT['POT_weight']   = 0.428
+df_1e0p_EXT['POT_weight']    = 0.371
+
+df_numu_MC_BNB = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/numu/mc.root"])
+df_numu_DIRT   = get_frame(["/uboone/data/users/davidc/searchingfornues/v08_00_00_48/0928/SBNFit/numu/dirt.root"])
+df_numu_EXT    = get_frame_ext(["/uboone/data/users/wospakrk/sbnfit_0928/numu/ext.root"])
+
+df_numu_MC_BNB['POT_weight'] = 0.159
+df_numu_DIRT['POT_weight']   = 0.649
+df_numu_EXT['POT_weight']    = 0.257
+
+##########################################################################################################################
+
+frames = [df_1enp_nue, df_1enp_MC_BNB, df_1enp_CC0pi, df_1enp_CCpi0, df_1enp_NCCpi, df_1enp_NC0pi, df_1enp_NCpi0, df_1enp_CCCpi,
+          df_1e0p_nue, df_1e0p_MC_BNB, df_1e0p_CC0pi, df_1e0p_CCpi0, df_1e0p_NCCpi, df_1e0p_NC0pi, df_1e0p_NCpi0, df_1e0p_CCCpi,
+          df_numu_MC_BNB, df_numu_DIRT]
+frames_ext = [df_1enp_EXT, df_1e0p_EXT, df_numu_EXT]
 df_no_energy_cut_total = pd.concat(frames)
+df_no_energy_cut_ext = pd.concat(frames_ext)
 df_no_energy_cut_total.enu_reco *= 1000#Now the reco energy is in [MeV]
 df_no_energy_cut_ext.enu_reco *= 1000
+
+df_no_energy_cut_total['POT_Times_weight'] = df_no_energy_cut_total['POT_weight'] * df_no_energy_cut_total['event_weight']
+df_no_energy_cut_ext['POT_Times_weight'] = df_no_energy_cut_ext['POT_weight'] * df_no_energy_cut_ext['event_weight']
 
 ################
 ##Energy range##
@@ -138,12 +200,13 @@ hknuEInclusive = df[(df['IsNC']==0) & ((df['nu_pdg_final']== 12) | (df['nu_pdg_f
 hkNCInclusive  = df[(df['IsNC']==1)]
 
 #Calculate total entries and normalize according to it
-total_counts = hknumuCCQE.event_weight.sum() + hknumuRes.event_weight.sum() + hknumuMEC.event_weight.sum() + hknumuCCOther.event_weight.sum() + hknuEInclusive.event_weight.sum() + hkNCInclusive.event_weight.sum()+df_ext.event_weight.sum()
+#total_counts = hknumuCCQE.event_weight.sum() + hknumuRes.event_weight.sum() + hknumuMEC.event_weight.sum() + hknumuCCOther.event_weight.sum() + hknuEInclusive.event_weight.sum() + hkNCInclusive.event_weight.sum()+df_ext.event_weight.sum()
+total_counts = hknumuCCQE.POT_Times_weight.sum() + hknumuRes.POT_Times_weight.sum() + hknumuMEC.POT_Times_weight.sum() + hknumuCCOther.POT_Times_weight.sum() + hknuEInclusive.POT_Times_weight.sum() + hkNCInclusive.POT_Times_weight.sum()+df_ext.POT_Times_weight.sum()
 df['norm'] = 1/total_counts
-df['norm_weight'] = df['event_weight'] * df['norm']
+df['norm_weight'] = df['POT_Times_weight'] * df['norm']
 
 df_ext['norm'] = 1/total_counts
-df_ext['norm_weight'] = df_ext['event_weight'] * df_ext['norm']
+df_ext['norm_weight'] = df_ext['POT_Times_weight'] * df_ext['norm']
 
 hknumuCCQE_enu_reco     = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 0)]#pdg == +-14 means muon and +-12 is electron
 hknumuRes_enu_reco      = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 1)]#IsNC=0 means CC and 1 is NC
@@ -193,11 +256,11 @@ plt.figure(figsize=(15,10))
 labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT','PeLEE tech note']
 #plt.hist(x, bins=500, stacked=True,label=labels)
 #plt.hist(x, bins=14, range=(LOWER_LIMIT, UPPER_LIMIT), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
-n, bins, patches = plt.hist(x, 14,histtype='bar',stacked=True,
+n, bins, patches = plt.hist(x, 14,histtype='bar',stacked=True, weights=y,
                         color=['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink'],
                         label=[r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT'])
 
-hatches = [' ',' ',' ',' ',' ',' ','//']
+hatches = [' ',' ',' ',' ',' ',' ',' ']
 for patch_set, hatch in zip(patches, hatches):
     for patch in patch_set.patches:
         patch.set_hatch(hatch)
@@ -223,7 +286,7 @@ handle_me = [hknumuCCQE_patch,hknumuRes_patch,hknumuMEC_patch,hknumuCCOther_patc
 plt.legend(handle_me, labels,fontsize=20)
 #plt.yscale('log')
 #plt.legend()
-plt.suptitle('PeLEE Neutrino reconstructed energy (GENIE weight included, normalized)',fontsize=22)
+plt.suptitle('PeLEE Neutrino reconstructed energy (GENIE, POT weight included, normalized)',fontsize=22)
 plt.rc('xtick',labelsize=22)
 plt.rc('ytick',labelsize=22)
 params = {'axes.labelsize': 22,'axes.titlesize':22, 'legend.fontsize': 20, 'xtick.labelsize': 22, 'ytick.labelsize': 22}#text.fontsize
