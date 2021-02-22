@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
+import matplotlib
 
 from uBLEEConsistency import NuEvent
 from matplotlib import pyplot as plt
@@ -116,6 +117,7 @@ df_no_energy_cut_ext = get_frame_ext()
 frames = [df_no_energy_cut, df_no_energy_cut_ext]
 df_no_energy_cut_total = pd.concat(frames)
 df_no_energy_cut_total.enu_reco *= 1000#Now the reco energy is in [MeV]
+df_no_energy_cut_ext.enu_reco *= 1000
 
 ################
 ##Energy range##
@@ -125,6 +127,7 @@ UPPER_LIMIT = 1550
 LOWER_LIMIT = 150
 
 df=df_no_energy_cut_total[(df_no_energy_cut_total['enu_reco']<UPPER_LIMIT) & (df_no_energy_cut_total['enu_reco']>LOWER_LIMIT)]
+df_ext=df_no_energy_cut_ext[(df_no_energy_cut_ext['enu_reco']<UPPER_LIMIT) & (df_no_energy_cut_ext['enu_reco']>LOWER_LIMIT)]
 #df['reco_with_weight']     = df['enu_reco'] * df['event_weight'] #Bullshit
 
 hknumuCCQE     = df[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 0)]#pdg == +-14 means muon and +-12 is electron
@@ -135,9 +138,12 @@ hknuEInclusive = df[(df['IsNC']==0) & ((df['nu_pdg_final']== 12) | (df['nu_pdg_f
 hkNCInclusive  = df[(df['IsNC']==1)]
 
 #Calculate total entries and normalize according to it
-total_counts = hknumuCCQE.event_weight.sum() + hknumuRes.event_weight.sum() + hknumuMEC.event_weight.sum() + hknumuCCOther.event_weight.sum() + hknuEInclusive.event_weight.sum() + hkNCInclusive.event_weight.sum()
+total_counts = hknumuCCQE.event_weight.sum() + hknumuRes.event_weight.sum() + hknumuMEC.event_weight.sum() + hknumuCCOther.event_weight.sum() + hknuEInclusive.event_weight.sum() + hkNCInclusive.event_weight.sum()+df_ext.event_weight.sum()
 df['norm'] = 1/total_counts
 df['norm_weight'] = df['event_weight'] * df['norm']
+
+df_ext['norm'] = 1/total_counts
+df_ext['norm_weight'] = df_ext['event_weight'] * df_ext['norm']
 
 hknumuCCQE_enu_reco     = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 0)]#pdg == +-14 means muon and +-12 is electron
 hknumuRes_enu_reco      = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 1)]#IsNC=0 means CC and 1 is NC
@@ -145,6 +151,7 @@ hknumuMEC_enu_reco      = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 1
 hknumuCCOther_enu_reco  = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] != 0) & (df['nu_interaction_mode'] != 1) & (df['nu_interaction_mode'] != 10)]
 hknuEInclusive_enu_reco = df.enu_reco[(df['IsNC']==0) & ((df['nu_pdg_final']== 12) | (df['nu_pdg_final']== -12))]
 hkNCInclusive_enu_reco  = df.enu_reco[(df['IsNC']==1)]
+hext_enu_reco           = df_ext.enu_reco
 
 hknumuCCQE_norm     = df.norm_weight[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 0)]#pdg == +-14 means muon and +-12 is electron
 hknumuRes_norm      = df.norm_weight[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] == 1)]#IsNC=0 means CC and 1 is NC
@@ -152,9 +159,10 @@ hknumuMEC_norm      = df.norm_weight[(df['IsNC']==0) & ((df['nu_pdg_final']== 14
 hknumuCCOther_norm  = df.norm_weight[(df['IsNC']==0) & ((df['nu_pdg_final']== 14) | (df['nu_pdg_final']== -14))  & (df['nu_interaction_mode'] != 0) & (df['nu_interaction_mode'] != 1) & (df['nu_interaction_mode'] != 10)]
 hknuEInclusive_norm = df.norm_weight[(df['IsNC']==0) & ((df['nu_pdg_final']== 12) | (df['nu_pdg_final']== -12))]
 hkNCInclusive_norm  = df.norm_weight[(df['IsNC']==1)]
+hext_norm           = df_ext.norm_weight
 
-x = [hknumuCCQE_enu_reco, hknumuRes_enu_reco, hknumuMEC_enu_reco, hknumuCCOther_enu_reco, hknuEInclusive_enu_reco, hkNCInclusive_enu_reco]
-y = [hknumuCCQE_norm, hknumuRes_norm, hknumuMEC_norm, hknumuCCOther_norm, hknuEInclusive_norm, hkNCInclusive_norm]
+x = [hknumuCCQE_enu_reco, hknumuRes_enu_reco, hknumuMEC_enu_reco, hknumuCCOther_enu_reco, hknuEInclusive_enu_reco, hkNCInclusive_enu_reco, hext_enu_reco]
+y = [hknumuCCQE_norm, hknumuRes_norm, hknumuMEC_norm, hknumuCCOther_norm, hknuEInclusive_norm, hkNCInclusive_norm, hext_norm]
 
 #########################
 ##Reading the text file##
@@ -182,9 +190,18 @@ for i in range(len(y1)):
 ############
 
 plt.figure(figsize=(15,10))
-labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'PeLEE tech note']
+labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT','PeLEE tech note']
 #plt.hist(x, bins=500, stacked=True,label=labels)
-plt.hist(x, bins=14, range=(LOWER_LIMIT, UPPER_LIMIT), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
+#plt.hist(x, bins=14, range=(LOWER_LIMIT, UPPER_LIMIT), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
+n, bins, patches = plt.hist(x, 14,histtype='bar',stacked=True,
+                        color=['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink'],
+                        label=[r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT'])
+
+hatches = [' ',' ',' ',' ',' ',' ','//']
+for patch_set, hatch in zip(patches, hatches):
+    for patch in patch_set.patches:
+        patch.set_hatch(hatch)
+
 plt.hist(x1,bins=14,range=(LOWER_LIMIT, UPPER_LIMIT),weights=y2, histtype='step',label='PeLEE tech note',linewidth=2,edgecolor='black')
 plt.xlabel('Neutrino reconstructed energy [MeV]', fontsize=22)
 
@@ -198,14 +215,18 @@ hknumuMEC_patch      = mpatches.Patch(color='tab:green', label=r"BNB $\nu_{\mu}$
 hknumuCCOther_patch  = mpatches.Patch(color='tab:red', label=r"BNB $\nu_{\mu}$ CC Other")
 hknuEInclusive_patch = mpatches.Patch(color='tab:purple', label=r"$\nu_{e}$ Inclusive")
 hkNCInclusive_patch  = mpatches.Patch(color='tab:brown', label="NC Inlcusive")
+hext_patch  = mpatches.Patch(color='tab:pink', label="EXT")
+#hext_patch           = mpatches.Patch(fill=False, hatch='\\')#If you want the tech note hatch
 x1_line              = Line2D([0], [0], color='k', linewidth=2, label="PeLEE tech note")
 
-handle_me = [hknumuCCQE_patch,hknumuRes_patch,hknumuMEC_patch,hknumuCCOther_patch,hknuEInclusive_patch,hkNCInclusive_patch,x1_line]
+handle_me = [hknumuCCQE_patch,hknumuRes_patch,hknumuMEC_patch,hknumuCCOther_patch,hknuEInclusive_patch,hkNCInclusive_patch,hext_patch,x1_line]
 plt.legend(handle_me, labels,fontsize=20)
 #plt.yscale('log')
 #plt.legend()
 plt.suptitle('PeLEE Neutrino reconstructed energy (GENIE weight included, normalized)',fontsize=22)
 plt.rc('xtick',labelsize=22)
 plt.rc('ytick',labelsize=22)
-#plt.savefig('nu_energy_reco_truth_break_ccnc_py.png')
+params = {'axes.labelsize': 22,'axes.titlesize':22, 'legend.fontsize': 20, 'xtick.labelsize': 22, 'ytick.labelsize': 22}#text.fontsize
+matplotlib.rcParams.update(params)
+#plt.savefig('PeLEE_nu_energy_reco_truth_break_EXT_py.png')
 plt.show()
