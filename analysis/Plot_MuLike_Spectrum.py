@@ -1,12 +1,29 @@
-##Now that you have dataframes from datasets/PeLEE_numu_......
 import sys, getopt
+#import pandas as pd
+import numpy as np
+import uBLEEConsistency.datasets as da#if you do"from uBLEEConsistency import datasets" it will fail
+
+import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
+import matplotlib
+
+from matplotlib import pyplot as plt
+
+#########################################################################
+##An interesting way of importing datasets.PeLEE_numu_v08_00_00_48_0928##
+#########################################################################
+#import importlib
+#DATASET = "uBLEEConsistency.datasets.PeLEE_numu_v08_00_00_48_0928"
+#mymodule = importlib.import_module(DATASET)
+#df_all = mymodule.get_datasets()
+
 ######################
 ##Reading arguements##
 ######################
 full_cmd_arguments = sys.argv
 # Keep all but the first, since the first is the fileneme
 argument_list = full_cmd_arguments[1:]
-print argument_list
+print(argument_list)
 
 short_options = "l:u:d:p:"
 long_options = ["min-energy=", "max-energy=", "dataset=", "POT="]
@@ -20,29 +37,30 @@ except getopt.error as err:
 for current_argument, current_value in arguments:
     if current_argument in ("-l", "--min-energy"):
         print ("The lower limit of energy is: %s MeV" %current_value)
-        LOWER_LIMIT = current_value
+        LOWER_LIMIT = float(current_value)
     elif current_argument in ("-u", "--max-energy"):
         print ("The upper limit of energy is: %s MeV" %current_value)
-        UPPER_LIMIT = current_value
+        UPPER_LIMIT = float(current_value)
     elif current_argument in ("-d", "--dataset"):
         print ("The version of the dataset is: %s" %current_value)
         DATASET = current_value
     elif current_argument in ("-p", "--POT"):
-        print ("The POT is %sE+20" %current_value)
-        INPUT_POT = current_value
+        print ("The POT is: %sE+20" %current_value)
+        INPUT_POT = float(current_value)
+#Note that all current_value is a string, you need float() to change their type
 
-NORMALIZATION = False
+NORMALIZATION = True
+PLOT_DIGITIZED = True
 
 ################################################
 ##Use DATASET to call the correct get_datasets##
 ################################################
-
-df_all.event_weight *= INPUT_POT#POT scaling according to the input POT
-df_with_energy_cut=df_all[(df_all['enu_reco']<UPPER_LIMIT) & (df_all['enu_reco']>LOWER_LIMIT)]
-
-df_numu_MC_BNB = df_with_energy_cut[df_with_energy_cut['IsDirt']==0]
-df_numu_DIRT   = df_with_energy_cut[df_with_energy_cut['IsDirt']==1]
-df_numu_EXT    = df_with_energy_cut[df_with_energy_cut['IsDirt']==2]
+df_all = getattr(da,DATASET).get_datasets()
+df_all['event_weight'] *= INPUT_POT#POT scaling according to the input POT
+df_with_energy_cut = df_all[(df_all['enu_reco']<UPPER_LIMIT) & (df_all['enu_reco']>LOWER_LIMIT)]
+df_numu_MC_BNB = df_with_energy_cut[(df_with_energy_cut['IsDirt']==0)]#With a strange selection cut
+df_numu_DIRT   = df_with_energy_cut[(df_with_energy_cut['IsDirt']==1)]
+df_numu_EXT    = df_with_energy_cut[(df_with_energy_cut['IsDirt']==2)]
 
 #########################
 ##Drawing CCQE,CCRes...##
@@ -54,68 +72,108 @@ hknumuCCOther  = df_numu_MC_BNB[(df_numu_MC_BNB['IsNC']==0) & ((df_numu_MC_BNB['
 hknuEInclusive = df_numu_MC_BNB[(df_numu_MC_BNB['IsNC']==0) & ((df_numu_MC_BNB['nu_pdg_final']== 12) | (df_numu_MC_BNB['nu_pdg_final']== -12))]
 hkNCInclusive  = df_numu_MC_BNB[(df_numu_MC_BNB['IsNC']==1)]
 
-x      = [hknumuCCQE, hknumuRes, hknumuMEC, hknumuCCOther, hknuEInclusive, hkNCInclusive, df_numu_DIRT, df_numu_EXT]
-data   = [hknumuCCQE.enu_reco, hknumuRes.enu_reco, hknumuMEC.enu_reco, hknumuCCOther.enu_reco, hknuEInclusive.enu_reco, hkNCInclusive.enu_reco, df_numu_DIRT.enu_reco, df_numu_EXT.enu_reco]
+x = [df_numu_DIRT, hkNCInclusive, hknuEInclusive, hknumuCCQE, hknumuMEC, hknumuRes, hknumuCCOther, df_numu_EXT]
+data = []
+y = []
+z = []
+total = 0
 if NORMALIZATION is True:
     total = 0
     total = sum([h_i.event_weight.sum() for h_i in x])
     for h_i in x:
-      h_i.event_weight *= 1/total #h_i.event_weight *= 1/total for h_i in x?
-weight = [hknumuCCQE.event_weight, hknumuRes.event_weight, hknumuMEC.event_weight, hknumuCCOther.event_weight, hknuEInclusive.event_weight, hkNCInclusive.event_weight, df_numu_DIRT.event_weight, df_numu_EXT.event_weight]
-#Do it in a loop? Use append to add new elements to a []??
+      h_i.event_weight *= 1/total
+for h_i in x:
+  data.append(h_i.enu_reco)
+  y.append(h_i.event_weight)
+  z.append("{:.2f}".format(h_i.event_weight.sum()))
 
 ######################
 ##Drawing CC x pi...##
 ######################
 
+################################
+##PeLEE tech note digitization##
+################################
+if DATASET is 'PeLEE_numu_v08_00_00_48_0928':
+  x1 = np.empty(14)
+  for i in range(len(x1)):
+      x1[i] = 200 + 100 * i
+  
+  y1 = np.empty(14)
+  f = open('/uboone/data/users/shijy/Consistency/PeLEE_reco_nu_energy_digitized.csv',"r")
+  for i in range(len(y1)):
+      y1[i] = f.readline()
+  
+  if NORMALIZATION is True:
+      total_y1 = 0
+      for i in range(len(y1)):
+          total_y1 += y1[i]
+  
+      y2 = y1
+      for i in range(len(y1)):
+          y2[i] = y1[i]/total_y1
+  else:
+      total_y1 = 0
+      for i in range(len(y1)):
+          total_y1 += y1[i]
+      y2 = y1
+else:
+  print('No digitized data yet.')
+
 ############
 ##Plotting##
 ############
 plt.figure(figsize=(15,10))
-labels= [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT', 'DIRT']
-#labels= [r"BNB $\nu_{\mu}$ CCQE 0.368", r"BNB $\nu_{\mu}$ Res 0.262",r"BNB $\nu_{\mu}$ MEC 0.136",r"BNB $\nu_{\mu}$ CCOther 0.052",r"$\nu_{e}$ Inclusive 0.007","NC Inlcusive 0.060", 'EXT 0.085', 'DIRT 0.028','PeLEE tech note']#This is the label for normalized histogram
-#labels= [r"BNB $\nu_{\mu}$ CCQE 4655.96", r"BNB $\nu_{\mu}$ Res 3310.37",r"BNB $\nu_{\mu}$ MEC 1725.66",r"BNB $\nu_{\mu}$ CCOther 656.83",r"$\nu_{e}$ Inclusive 95.32","NC Inlcusive 762.95", 'EXT 1077.77', 'DIRT 353.85','PeLEE tech note 50925.99']#'f' is used to print variables
-#labels= [r"BNB $\nu_{\mu}$ CCQE 13924.17", r"BNB $\nu_{\mu}$ Res 9900.03",r"BNB $\nu_{\mu}$ MEC 5160.79",r"BNB $\nu_{\mu}$ CCOther 1964.31",r"$\nu_{e}$ Inclusive 285.07","NC Inlcusive 2281.70", 'EXT 3223.19', 'DIRT 1058.23','PeLEE tech note 50925.99']#With POT scaling 6.37/2.13
+plt.rc('xtick',labelsize=22)
+plt.rc('ytick',labelsize=22)
+#labels = [r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res", r"BNB $\nu_{\mu}$ MEC", r"BNB $\nu_{\mu}$ CCOther", r"$\nu_{e}$ Inclusive", "NC Inlcusive", 'EXT', "DIRT"]
+labels = ["DIRT: %s"%z[0], "NC Inlcusive: %s"%z[1], r"$\nu_{e}$ Inclusive: %s"%z[2], r"BNB $\nu_{\mu}$ CCQE: %s"%z[3], r"BNB $\nu_{\mu}$ MEC: %s"%z[4], r"BNB $\nu_{\mu}$ Res: %s"%z[5], r"BNB $\nu_{\mu}$ CCOther: %s"%z[6], 'EXT: %s'%z[7]]
 #plt.hist(x, bins=14, range=(LOWER_LIMIT, UPPER_LIMIT), stacked=True,label=labels, weights=y)#Weights should have the same shape with data
-n, bins, patches = plt.hist(x, 14,histtype='bar',stacked=True, weights=y,
-                        color=['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray'],
-                        label=[r"BNB $\nu_{\mu}$ CCQE", r"BNB $\nu_{\mu}$ Res",r"BNB $\nu_{\mu}$ MEC",r"BNB $\nu_{\mu}$ CCOther",r"$\nu_{e}$ Inclusive","NC Inlcusive", 'EXT', 'DIRT'])
+colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray']
+n, bins, patches = plt.hist(data, 14,histtype='bar',stacked=True, weights=y,
+                        color=colors,
+                        label=labels)
 
 hatches = [' ',' ',' ',' ',' ',' ',' ',' ']
 for patch_set, hatch in zip(patches, hatches):
     for patch in patch_set.patches:
         patch.set_hatch(hatch)
-
-#plt.hist(x1,bins=14,range=(LOWER_LIMIT, UPPER_LIMIT),weights=y2, histtype='step',label='PeLEE tech note',linewidth=2,edgecolor='black')
+if PLOT_DIGITIZED is True:
+  plt.hist(x1,bins=14,range=(LOWER_LIMIT, UPPER_LIMIT),weights=y2, histtype='step',label='PeLEE tech note',linewidth=2,edgecolor='black')
 plt.xlabel('Neutrino reconstructed energy [MeV]', fontsize=22)
 
 ##################
 ##Legend entries##
 ##################
 
-hknumuCCQE_patch     = mpatches.Patch(color='tab:blue', label=r"BNB $\nu_{\mu}$ CCQE")
-hknumuRes_patch      = mpatches.Patch(color='tab:orange', label=r"BNB $\nu_{\mu}$ Res")
-hknumuMEC_patch      = mpatches.Patch(color='tab:green', label=r"BNB $\nu_{\mu}$ MEC")
-hknumuCCOther_patch  = mpatches.Patch(color='tab:red', label=r"BNB $\nu_{\mu}$ CC Other")
-hknuEInclusive_patch = mpatches.Patch(color='tab:purple', label=r"$\nu_{e}$ Inclusive")
-hkNCInclusive_patch  = mpatches.Patch(color='tab:brown', label="NC Inlcusive")
-hext_patch           = mpatches.Patch(color='tab:pink', label="EXT")
-hdirt_patch          = mpatches.Patch(color='tab:gray', label="DIRT")
+hdirt_patch          = mpatches.Patch(color=colors[0], label="DIRT")
+hkNCInclusive_patch  = mpatches.Patch(color=colors[1], label="NC Inlcusive")
+hknuEInclusive_patch = mpatches.Patch(color=colors[2], label=r"$\nu_{e}$ Inclusive")
+hknumuCCQE_patch     = mpatches.Patch(color=colors[3], label=r"BNB $\nu_{\mu}$ CCQE")
+hknumuMEC_patch      = mpatches.Patch(color=colors[4], label=r"BNB $\nu_{\mu}$ MEC")
+hknumuRes_patch      = mpatches.Patch(color=colors[5], label=r"BNB $\nu_{\mu}$ Res")
+hknumuCCOther_patch  = mpatches.Patch(color=colors[6], label=r"BNB $\nu_{\mu}$ CC Other")
+hext_patch           = mpatches.Patch(color=colors[7], label="EXT")
 #hext_patch           = mpatches.Patch(fill=False, hatch='\\')#If you want the tech note hatch
-#x1_line              = Line2D([0], [0], color='k', linewidth=2, label="PeLEE tech note")
+x1_line              = Line2D([0], [0], color='k', linewidth=2, label="PeLEE tech note")
 
-handle_me = [hknumuCCQE_patch,hknumuRes_patch,hknumuMEC_patch,hknumuCCOther_patch,hknuEInclusive_patch,hkNCInclusive_patch,hext_patch,hdirt_patch]
-plt.legend(handle_me, labels,fontsize=20)
+handle_me = [hdirt_patch, hkNCInclusive_patch, hknuEInclusive_patch, hknumuCCQE_patch, hknumuMEC_patch, hknumuRes_patch, hknumuCCOther_patch, hext_patch]
+if PLOT_DIGITIZED is True:
+  handle_me.append(x1_line)
+  if NORMALIZATION is True:
+    labels.append("PeLEE tech note")
+  else:
+    total = "{:.2f}".format(total_y1)
+    labels.append("PeLEE tech note: %s"%total)#################################
+
+plt.legend(handle_me, labels,fontsize=19)
 #plt.yscale('log')
 #plt.legend()
-if Normalization is True:
-    plt.suptitle('PeLEE Neutrino reconstructed energy (GENIE, POT weight included, normalized)',fontsize=22)
+DATASET_TITLE =  "{:.10s}".format(DATASET)#It is taking the first 10 elements, might not work if we have wirecell stuff
+if NORMALIZATION is True:
+    plt.suptitle(r'%s $\nu$ reconstructed energy (GENIE, POT weight included, normalized)'%DATASET_TITLE,fontsize=22)
 else:
-    plt.suptitle('PeLEE Neutrino reconstructed energy (GENIE, POT weight included)',fontsize=22)
-plt.rc('xtick',labelsize=22)
-plt.rc('ytick',labelsize=22)
-params = {'axes.labelsize': 22,'axes.titlesize':22, 'legend.fontsize': 20, 'xtick.labelsize': 22, 'ytick.labelsize': 22}#text.fontsize
-matplotlib.rcParams.update(params)
-#plt.savefig('PeLEE_nu_energy_reco_truth_break_EXT_py.png')
+    plt.suptitle(r'%s $\nu$ reconstructed energy (GENIE, POT weight included)'%DATASET_TITLE,fontsize=22)
+#plt.savefig('nu_energy_reco_PeLEE_numu_v08_00_00_48_0928_inter_mode_digi_norm.png')
 plt.show()
 
